@@ -9,19 +9,32 @@ SAVE_PATH=/home/juul/data/youtube/watch # Where to save videos
 cd $SAVE_PATH
 
 echo "Downloading description"
-OUTPUT=$(youtube-dl --restrict-filenames --skip-download --write-description "$@")
-DESCFILE=$(echo $OUTPUT | grep -E -o '[^[:blank:]]+\.description$')
+OUTPUT=$(youtube-dl --restrict-filenames --skip-download --write-description --write-auto-sub "$@")
+
+DESCFILE=$(echo "$OUTPUT" | grep -E -o '[^[:blank:]]+\.description$')
 echo "Wrote $DESCFILE"
+
+OLDSUBFILE=$(echo "$OUTPUT" | grep -E -o '[^[:blank:]]+\.vtt$')
+
+# Convert .vtt subtitle to .srt
+SUBFILE=$(echo $OLDSUBFILE | sed 's/\...\.vtt$/\.srt/')
+ffmpeg -i $OLDSUBFILE $SUBFILE
+rm $OLDSUBFILE
 
 # Remember what we watched (even if the yd command is called later)
 mkdir -p watched
 cp $DESCFILE watched/
 
 VIDFILE=$(echo $DESCFILE | sed 's/\.description$/.mp4/') # We don't actually know the real file format but assume mp4
+
+if [ -f "$VIDFILE" ]; then
+  echo "Video already downloaded" >&2
+  exit 1
+fi
+
 echo "Downloading $VIDFILE"
 
 echo $DESCFILE > ${SAVE_PATH}/latest
-VIDFILE_PATH="${SAVE_PATH}/${VIDFILE}"
 
-youtube-dl -q -o - -f '(best[height<=720])' "$@" | tee --output-error warn $VIDFILE_PATH | mplayer -cache 30720 -cache-min 2 -fs -af scaletempo -speed $SPEED -
+youtube-dl -q -o - -f '(best[height<=720])' "$@" | tee --output-error warn $VIDFILE | mplayer -cache 30720 -cache-min 2 -fs -af scaletempo -subfile $SUBFILE -speed $SPEED -
 

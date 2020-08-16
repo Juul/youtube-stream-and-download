@@ -1,6 +1,6 @@
 # Setup
 
-First install [youtube-dl](https://youtube-dl.org/) and of course mplayer.
+First install mplayer, [youtube-dl](https://youtube-dl.org/) and ffmpeg.
 
 Put `yw` and `yd` in your PATH and make them executable.
 
@@ -22,5 +22,10 @@ To delete the most recently watched video (e.g. because you canceled the downloa
 yd
 ```
 
+# Notes
+
+Tested with version `2020.07.28` of youtube-dl.
+
+Subtitle display during streaming is not working in 1.3.0 but may work in later versions.
 
 
