@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Begin downloading a video from youtube and immediately play with mplayer
+# To abort download when quitting mplayer remove '--output-error warn'
+# See the 'yd' command for deleting the last downloaded video
+
+SPEED=2 # Playback speed
+SAVE_PATH=/home/juul/data/youtube/watch # Where to save videos
+cd $SAVE_PATH
+
+echo "Downloading description"
+OUTPUT=$(youtube-dl --restrict-filenames --skip-download --write-description "$@")
+DESCFILE=$(echo $OUTPUT | grep -E -o '[^[:blank:]]+\.description$')
+echo "Wrote $DESCFILE"
+
+# Remember what we watched (even if the yd command is called later)
+mkdir -p watched
+cp $DESCFILE watched/
+
+VIDFILE=$(echo $DESCFILE | sed 's/\.description$/.mp4/') # We don't actually know the real file format but assume mp4
+echo "Downloading $VIDFILE"
+
+echo $DESCFILE > ${SAVE_PATH}/latest
+VIDFILE_PATH="${SAVE_PATH}/${VIDFILE}"
+
+youtube-dl -q -o - -f '(best[height<=720])' "$@" | tee --output-error warn $VIDFILE_PATH | mplayer -cache 30720 -cache-min 2 -fs -af scaletempo -speed $SPEED -
+

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+SAVE_PATH=/home/juul/data/youtube/watch # Where to save videos
+cd $SAVE_PATH
+
+DESCFILE=$(cat latest 2>/dev/null)
+if [[ "$?" -ne "0" ]]; then
+  echo "No 'latest' file found" >&2
+  exit 1
+fi
+
+DELFILES=$(echo $DESCFILE | sed 's/\.description$/\.\*/')
+
+echo "Deleting $DELFILES"
+rm $DELFILES
+
+rm latest
+
