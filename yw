@@ -6,6 +6,7 @@
 
 SPEED=2 # Playback speed
 SAVE_PATH=/home/juul/data/youtube/watch # Where to save videos
+
 cd $SAVE_PATH
 
 echo "Downloading description"
@@ -16,10 +17,12 @@ echo "Wrote $DESCFILE"
 
 OLDSUBFILE=$(echo "$OUTPUT" | grep -E -o '[^[:blank:]]+\.vtt$')
 
-# Convert .vtt subtitle to .srt
-SUBFILE=$(echo $OLDSUBFILE | sed 's/\...\.vtt$/\.srt/')
-ffmpeg -i $OLDSUBFILE $SUBFILE
-rm $OLDSUBFILE
+if [ ! -z "$OLDSUBFILE" ]; then
+  # Convert .vtt subtitle to .srt
+  SUBFILE=$(echo $OLDSUBFILE | sed 's/\...\.vtt$/\.srt/')
+  ffmpeg -i $OLDSUBFILE $SUBFILE
+  rm $OLDSUBFILE
+fi
 
 # Remember what we watched (even if the yd command is called later)
 mkdir -p watched
@@ -36,5 +39,18 @@ echo "Downloading $VIDFILE"
 
 echo $DESCFILE > ${SAVE_PATH}/latest
 
-youtube-dl -q -o - -f '(best[height<=720])' "$@" | tee --output-error warn $VIDFILE | mplayer -cache 30720 -cache-min 2 -fs -af scaletempo -subfile $SUBFILE -speed $SPEED -
+# It appears that VLC does not have a way to disable showing subtitles from the command line. Pressing 'v' will hide them.
+CMD="youtube-dl -q -o - -f '(best[height<=720])' \"$@\" | tee --output-error warn \"$VIDFILE\" | vlc --rate 2.0 --fullscreen"
+
+if [ ! -z $SUBFILE ]; then
+  CMD="$CMD --sub-file $SUBFILE"
+fi
+
+CMD="$CMD -"
+
+eval $CMD
+
+# The `-subfile` option for mplayer is currently broken
+# Also increasing playback speed to over 2.0 does not work well
+# mplayer -cache 30720 -cache-min 2 -fs -af scaletempo -speed $SPEED -
 

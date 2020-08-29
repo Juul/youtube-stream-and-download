@@ -1,8 +1,10 @@
+Stream youtube videos with VLC while keeping a local copy of the watched video without having to re-download. Also downloads the description and subtitles.
+
 # Setup
 
-First install mplayer, [youtube-dl](https://youtube-dl.org/) and ffmpeg.
+First install vlc, ffmpeg and [youtube-dl](https://youtube-dl.org/).
 
-Put `yw` and `yd` in your PATH and make them executable.
+Put `yw` and `yd` in your $PATH and make them executable.
 
 Edit the path at the top of the scripts and ensure it exists.
 
