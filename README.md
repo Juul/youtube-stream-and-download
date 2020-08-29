@@ -28,6 +28,4 @@ yd
 
 Tested with version `2020.07.28` of youtube-dl.
 
-Subtitle display during streaming is not working in 1.3.0 but may work in later versions.
-
 
