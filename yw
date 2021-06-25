@@ -6,11 +6,13 @@
 
 SPEED=2 # Playback speed
 SAVE_PATH=/home/juul/data/youtube/watch # Where to save videos
+RESOLUTION=1080 # The best available version in this (vertical) resolution or the closest available lower resolution will be used
+SUBTITLES=no # Set this to "yes" if you want to show subtitles during playback. Subtitles will always be downloaded
 
 cd $SAVE_PATH
 
 echo "Downloading description"
-OUTPUT=$(youtube-dl --restrict-filenames --skip-download --write-description --write-auto-sub "$@")
+OUTPUT=$(youtube-dl --restrict-filenames --skip-download --write-description --write-all-thumbnails --write-auto-sub "$@")
 
 DESCFILE=$(echo "$OUTPUT" | grep -E -o '[^[:blank:]]+\.description$')
 echo "Wrote $DESCFILE"
@@ -39,10 +41,12 @@ echo "Downloading $VIDFILE"
 
 echo $DESCFILE > ${SAVE_PATH}/latest
 
-# It appears that VLC does not have a way to disable showing subtitles from the command line. Pressing 'v' will hide them.
-CMD="youtube-dl -q -o - -f '(best[height<=720])' \"$@\" | tee --output-error warn \"$VIDFILE\" | vlc --rate 2.0 --fullscreen"
+FILTER="'(best[height<=${RESOLUTION}])'"
 
-if [ ! -z $SUBFILE ]; then
+# It appears that VLC does not have a way to disable showing subtitles from the command line. Pressing 'v' will hide them.
+CMD="youtube-dl -q -o - -f $FILTER \"$@\" | tee --output-error warn \"$VIDFILE\" | vlc --rate 2.0 --fullscreen"
+
+if [ ! -z $SUBFILE ] && [ "$SUBTITLES" == "yes" ]; then
   CMD="$CMD --sub-file $SUBFILE"
 fi
 
